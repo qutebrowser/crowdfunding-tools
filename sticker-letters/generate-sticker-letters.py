@@ -66,6 +66,10 @@ def process(line):
     line['state_and_zip'] = '{} {}'.format(line['Shipping State'],
                                            line['Shipping Postal Code'])
 
+    line['city_state_zip'] = '{} {} {}'.format(line['Shipping City'],
+                                               line['Shipping State'],
+                                               line['Shipping Postal Code']).upper()
+
     if line['Shipping Country Code'] == 'US':
         addr_parts = [
             'Shipping Name',
@@ -81,8 +85,24 @@ def process(line):
             'Shipping Address 1',
             'Shipping Address 2',
             'Shipping City',
-            'Shipping State',
+            #'Shipping State',
             'Shipping Postal Code',
+            'Shipping Country Name',
+        ]
+    elif line['Shipping Country Code'] in ['DE', 'CH']:
+        addr_parts = [
+            'Shipping Name',
+            'Shipping Address 1',
+            'Shipping Address 2',
+            'zip_and_city',
+            'Shipping Country Name',
+        ]
+    elif line['Shipping Country Code'] == 'AU':
+        addr_parts = [
+            'Shipping Name',
+            'Shipping Address 1',
+            'Shipping Address 2',
+            'city_state_zip',
             'Shipping Country Name',
         ]
     else:
@@ -94,8 +114,6 @@ def process(line):
             'Shipping State',
             'Shipping Country Name',
         ]
-
-
 
     parts = [line[e].replace('#', '\\#') for e in addr_parts if line[e].strip()]
     if not parts:
