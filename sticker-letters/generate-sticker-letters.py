@@ -85,10 +85,11 @@ def process(line):
             'Shipping Address 1',
             'Shipping Address 2',
             'Shipping City',
-            #'Shipping State',
             'Shipping Postal Code',
             'Shipping Country Name',
         ]
+        if line['Shipping State'] != line['Shipping City']:
+            addr_parts.insert(4, 'Shipping State')
     elif line['Shipping Country Code'] in ['DE', 'CH']:
         addr_parts = [
             'Shipping Name',
