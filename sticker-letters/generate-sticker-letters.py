@@ -1,5 +1,7 @@
 import jinja2
 import csv
+import subprocess
+import sys
 
 template = r"""
 \documentclass[paper=a4]{scrlttr2}
@@ -13,7 +15,7 @@ template = r"""
 \setkomavar{fromname}{Florian Bruhin}
 \setkomavar{fromaddress}{Ruchwiesenstrasse 36 \\ 8404 Winterthur \\ Switzerland}
 \setkomavar{signature}{Florian Bruhin / The Compiler}
-\setkomavar{date}{6th July 2016}
+\setkomavar{date}{\today}
 \setkomavar{fromemail}{me@the-compiler.org}
 
 \setkomavar{subject}{
@@ -29,9 +31,8 @@ template = r"""
 
 \vspace{1em}
 
-As promised some months ago, here are the {{what}} stickers you selected with
-your pledge on Indiegogo. According to my records, your pledge does not include
-a t-shirt.
+As promised, here are your qutebrowser stickers. According to my records, your
+pledge does not include a t-shirt.
 
 If you think this is wrong, please contact me ASAP on me@the-compiler.org. If
 you need more stickers (like for a local hackerspace), don't hesitate to
@@ -47,97 +48,77 @@ Thanks again for your support!
 \end{document}
 """
 
-pytest_addr = []
-qute_addr = []
+addrs = []
 
 
-def process(line, what):
-    if line['Name'] != line['Shipping Name']:
-        print('{}: name {:35} != shipping {:35}'.format(
-            what, line['Name'], line['Shipping Name']))
+def process(line):
+    if line['Backer Name'] != line['Shipping Name']:
+        print('name "{}" != shipping "{}"'.format(
+            line['Backer Name'], line['Shipping Name']))
 
-    line['zip_and_city'] = '{} {}'.format(line['Shipping Zip/Postal Code'],
+    if line['Shipping Delivery Notes']:
+        print('NOTES: {} - {}'.format(line['Backer Name'],
+                                      line['Shipping Delivery Notes']))
+
+    line['zip_and_city'] = '{} {}'.format(line['Shipping Postal Code'],
                                           line['Shipping City'])
 
-    line['state_and_zip'] = '{} {}'.format(line['Shipping State/Province'],
-                                           line['Shipping Zip/Postal Code'])
-                                          
+    line['state_and_zip'] = '{} {}'.format(line['Shipping State'],
+                                           line['Shipping Postal Code'])
 
-    country_mapping = {
-        'UK': 'United Kingdom',
-        'US': 'United States',
-        'USA': 'United States',
-    }
-
-    try:
-        line['Shipping Country'] = country_mapping[line['Shipping Country']]
-    except KeyError:
-        pass
-
-    if line['Shipping Country'] == 'United States':
+    if line['Shipping Country Code'] == 'US':
         addr_parts = [
             'Shipping Name',
-            'Shipping Address',
+            'Shipping Address 1',
             'Shipping Address 2',
             'Shipping City',
             'state_and_zip',
-            'Shipping Country',
+            'Shipping Country Name',
         ]
-    elif line['Shipping Country'] == 'United Kingdom':
+    elif line['Shipping Country Code'] == 'GB':
         addr_parts = [
             'Shipping Name',
-            'Shipping Address',
+            'Shipping Address 1',
             'Shipping Address 2',
             'Shipping City',
-            'Shipping State/Province',
-            'Shipping Zip/Postal Code',
-            'Shipping Country',
+            'Shipping State',
+            'Shipping Postal Code',
+            'Shipping Country Name',
         ]
     else:
         addr_parts = [
             'Shipping Name',
-            'Shipping Address',
+            'Shipping Address 1',
             'Shipping Address 2',
             'zip_and_city',
-            'Shipping State/Province',
-            'Shipping Country',
+            'Shipping State',
+            'Shipping Country Name',
         ]
 
-    addr = r' \\ '.join(line[e].replace('#', '\\#') for e in addr_parts if line[e])
-    if what == 'pytest':
-        pytest_addr.append(addr)
-    elif what == 'qutebrowser':
-        qute_addr.append(addr)
-    else:
-        assert False, what
 
 
-with open('pytest.csv') as ptf, open('qutebrowser.csv') as qf:
-    ptreader = csv.DictReader(ptf)
-    qreader = csv.DictReader(qf)
+    parts = [line[e].replace('#', '\\#') for e in addr_parts if line[e].strip()]
+    if not parts:
+        print("EMPTY! {}".format(line['Backer Name']))
+        return
 
-    for line in ptreader:
-        if line['shirt color'] not in ['no', 'N/A']:
-            continue
-        assert line['shirt size'] == line['shirt color']
-        process(line, 'pytest')
+    addr = r' \\ '.join(parts)
+    addrs.append(addr)
 
-    for line in qreader:
-        if line['T-Shirt'] not in ['no', 'N/A']:
-            continue
-        if line['Stickers']  == 'no':
-            continue
-        process(line, 'qutebrowser')
+
+with open(sys.argv[1]) as f:
+    reader = csv.DictReader(f)
+
+    for line in reader:
+        process(line)
 
 print()
+print()
+print()
 
-pytest_out = jinja2.Template(template).render(addrs=pytest_addr, what='pytest')
-qute_out = jinja2.Template(template).render(addrs=qute_addr,
-                                            what='qutebrowser')
+out = jinja2.Template(template).render(addrs=addrs)
 
-with open('qute.tex', 'w', encoding='utf-8') as f:
-    f.write(qute_out)
+with open('letters.tex', 'w', encoding='utf-8') as f:
+    f.write(out)
 
-
-with open('pytest.tex', 'w', encoding='utf-8') as f:
-    f.write(pytest_out)
+subprocess.call(['latexmk', '-pdf', 'letters.tex'])
