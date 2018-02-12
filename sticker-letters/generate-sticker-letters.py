@@ -7,9 +7,10 @@ template = r"""
 \documentclass[paper=a4]{scrlttr2}
 \usepackage[utf8]{inputenc}
 
+\LoadLetterOption{SN}
+
 \makeatletter
-\@setplength{toaddrvpos}{3.5cm}
-\@setplength{toaddrhpos}{-2cm}
+\@setplength{toaddrvpos}{43mm}
 \makeatother
 
 \setkomavar{fromname}{Florian Bruhin}
