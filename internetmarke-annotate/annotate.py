@@ -21,14 +21,12 @@ def overlay(original, annotations, output):
     original_pdf = PyPDF2.PdfFileReader(original)
     annotations_pdf = PyPDF2.PdfFileReader(annotations)
 
-    pages = annotations_pdf.getNumPages()
     # pages = original_pdf.getNumPages()
     # assert pages == annotations_pdf.getNumPages()
 
-    for i in range(pages):
-        page = original_pdf.getPage(i)
-        page.mergePage(annotations_pdf.getPage(i))
-        output_pdf.addPage(page)
+    for orig_page, ann_page in zip(original_pdf.pages, annotations_pdf.pages):
+        orig_page.mergePage(ann_page)
+        output_pdf.addPage(orig_page)
 
     output_pdf.write(output)
 
