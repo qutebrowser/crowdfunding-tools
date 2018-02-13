@@ -7,21 +7,17 @@ from reportlab.lib import pagesizes, units
 
 
 def annotate(c, position, text):
-    margin_left = 20
-    margin_top = 80
+    margin_left = 25
+    margin_top = 25
 
     positions = {
-        'topleft': (margin_left * units.mm,
-                    margin_top * units.mm),
-        'topright': (margin_left + 420 / 2 * units.mm,
-                     margin_top * units.mm),
-        'bottomleft': (margin_left * units.mm,
-                       margin_top + 297 / 2 * units.mm),
-        'bottomright': (margin_left + 420 / 2 * units.mm,
-                        margin_top + 297 / 2 * units.mm),
+        'bottomleft': (margin_left, margin_top),
+        'bottomright': (margin_left + 297 / 2, margin_top),
+        'topleft': (margin_left, margin_top + 210 / 2),
+        'topright': (margin_left + 297 / 2, margin_top + 210 / 2),
     }
-    c.drawString(0, 0, "origin")
-    c.drawString(*positions[position], text)
+    pos = positions[position]
+    c.drawString(pos[0] * units.mm, pos[1] * units.mm, text)
 
 
 def find_data(post_row):
@@ -37,7 +33,8 @@ def find_data(post_row):
 def get_overlay_pdf(data_post):
     post_reader = csv.DictReader(data_post, delimiter=';')
     canvas_data = io.BytesIO()
-    output_canvas = canvas.Canvas(canvas_data, pagesize=pagesizes.landscape(pagesizes.A4))
+    output_canvas = canvas.Canvas(canvas_data,
+                                  pagesize=pagesizes.landscape(pagesizes.A4))
 
     next(post_reader)  # Sender
 
