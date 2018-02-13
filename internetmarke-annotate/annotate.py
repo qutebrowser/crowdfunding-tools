@@ -7,19 +7,20 @@ from reportlab.lib import pagesizes, units
 
 
 def annotate(c, position, text):
-    margin_left = 50
+    margin_left = 20
     margin_top = 80
 
     positions = {
         'topleft': (margin_left * units.mm,
-                    -margin_top * units.mm),
-        'topright': (margin_left + 297 / 2 * units.mm,
-                     -margin_top * units.mm),
+                    margin_top * units.mm),
+        'topright': (margin_left + 420 / 2 * units.mm,
+                     margin_top * units.mm),
         'bottomleft': (margin_left * units.mm,
-                       margin_top + 420 / 2 * units.mm * -1),
-        'bottomright': (margin_left + 297 / 2 * units.mm,
-                        margin_top + 420 / 2 * units.mm * -1),
+                       margin_top + 297 / 2 * units.mm),
+        'bottomright': (margin_left + 420 / 2 * units.mm,
+                        margin_top + 297 / 2 * units.mm),
     }
+    c.drawString(0, 0, "origin")
     c.drawString(*positions[position], text)
 
 
@@ -36,7 +37,7 @@ def find_data(post_row):
 def get_overlay_pdf(data_post):
     post_reader = csv.DictReader(data_post, delimiter=';')
     canvas_data = io.BytesIO()
-    output_canvas = canvas.Canvas(canvas_data, pagesize=pagesizes.A4)
+    output_canvas = canvas.Canvas(canvas_data, pagesize=pagesizes.landscape(pagesizes.A4))
 
     next(post_reader)  # Sender
 
@@ -54,6 +55,7 @@ def get_overlay_pdf(data_post):
         bottomleft_data = find_data(bottomleft)
         bottomright_data = find_data(bottomright)
 
+        output_canvas.translate(pagesizes.A4[0], 0)
         output_canvas.rotate(90)
 
         annotate(output_canvas, 'topleft', topleft_data)
