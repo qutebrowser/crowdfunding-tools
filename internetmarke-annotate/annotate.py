@@ -40,6 +40,29 @@ def annotate(c, position, text):
                  f"Absender: {sender}")
 
 
+def is_eu(country):
+    return {
+        'DE': True,
+        'GB': True,  # FIXME Maybe not true anymore next time I run this
+        'SE': True,
+        'BE': True,
+        'IT': True,
+        'FI': True,
+        'EE': True,
+        'IE': True,
+        'CZ': True,
+        'AT': True,
+
+        'US': False,
+        'CH': False,
+        'SG': False,
+        'UG': False,
+        'AU': False,
+        'NZ': False,
+        'CA': False,
+    }[country]
+
+
 def find_data(post_row):
     with open("shirts.csv", 'r') as f:
         reader = csv.DictReader(f)
@@ -61,13 +84,20 @@ def find_data(post_row):
         assert row['T Shirt 2 Color']
         lines.append('{} {}'.format(row['T Shirt 2 Size'],
                                     row['T Shirt 2 Color']))
+        two_shirts = True
     else:
         assert not row['T Shirt 2 Color']
+        two_shirts = False
 
     if row['Comments']:
         lines.append(row['Comments'])
 
-    return ' + '.join(lines)
+    if not is_eu(row['Shipping Country Code']):
+        free = row['Post'] == 'FREE'
+        lines.append("NON-EU free!" if free else "NON-EU!")
+        print(f"NON-EU two={two_shirts} free={free}")
+
+    return ' - '.join(lines)
 
 
 def get_overlay_pdf(data_post):
