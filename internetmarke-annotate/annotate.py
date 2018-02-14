@@ -11,13 +11,13 @@ DEBUG = False
 
 def annotate(c, position, text):
     margin_left = 31
-    margin_top = 10
+    margin_bottom = 10
 
     positions = {
-        'bottomleft': (margin_left, margin_top),
-        'bottomright': (margin_left + 297 / 2, margin_top),
-        'topleft': (margin_left, margin_top + 210 / 2),
-        'topright': (margin_left + 297 / 2, margin_top + 210 / 2),
+        'bottomleft': (margin_left, margin_bottom),
+        'bottomright': (margin_left + 297 / 2, margin_bottom),
+        'topleft': (margin_left, margin_bottom + 210 / 2),
+        'topright': (margin_left + 297 / 2, margin_bottom + 210 / 2),
     }
     pos = positions[position]
     c.drawString(pos[0] * units.mm, pos[1] * units.mm, text)
