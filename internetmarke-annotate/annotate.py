@@ -6,9 +6,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import pagesizes, units
 
 
+DEBUG = False
+
+
 def annotate(c, position, text):
-    margin_left = 25
-    margin_top = 25
+    margin_left = 31
+    margin_top = 10
 
     positions = {
         'bottomleft': (margin_left, margin_top),
@@ -27,7 +30,27 @@ def find_data(post_row):
 
     if len(rows) != 1:
         raise ValueError(f"{len(rows)} matches for {post_row}")
-    return rows[0]['Email']  # FIXME
+
+    row = rows[0]
+
+    lines = []
+
+    if DEBUG:
+        lines.append(row['Shipping Name'])
+
+    lines.append('{} {}'.format(row['T Shirt Size'], row['T Shirt Color']))
+
+    if row['T Shirt 2 Size']:
+        assert row['T Shirt 2 Color']
+        lines.append('{} {}'.format(row['T Shirt 2 Size'],
+                                    row['T Shirt 2 Color']))
+    else:
+        assert not row['T Shirt 2 Color']
+
+    if row['Comments']:
+        lines.append(row['Comments'])
+
+    return ' + '.join(lines)
 
 
 def get_overlay_pdf(data_post):
@@ -52,6 +75,7 @@ def get_overlay_pdf(data_post):
         bottomleft_data = find_data(bottomleft)
         bottomright_data = find_data(bottomright)
 
+        output_canvas.setFont("Helvetica", 8)
         output_canvas.translate(pagesizes.A4[0], 0)
         output_canvas.rotate(90)
 
