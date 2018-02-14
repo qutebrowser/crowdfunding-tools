@@ -13,14 +13,31 @@ def annotate(c, position, text):
     margin_left = 31
     margin_bottom = 10
 
+    sender_margin_left = 31
+    sender_margin_bottom = 90
+
     positions = {
         'bottomleft': (margin_left, margin_bottom),
         'bottomright': (margin_left + 297 / 2, margin_bottom),
         'topleft': (margin_left, margin_bottom + 210 / 2),
         'topright': (margin_left + 297 / 2, margin_bottom + 210 / 2),
+
+        'sender_bottomleft': (sender_margin_left, sender_margin_bottom),
+        'sender_bottomright': (sender_margin_left + 297 / 2,
+                               sender_margin_bottom),
+        'sender_topleft': (sender_margin_left,
+                           sender_margin_bottom + 210 / 2),
+        'sender_topright': (sender_margin_left + 297 / 2,
+                            sender_margin_bottom + 210 / 2),
     }
     pos = positions[position]
     c.drawString(pos[0] * units.mm, pos[1] * units.mm, text)
+
+    sender_pos = positions['sender_' + position]
+    with open('sender.txt', 'r') as f:
+        sender = f.read().strip()
+    c.drawString(sender_pos[0] * units.mm, sender_pos[1] * units.mm,
+                 f"Absender: {sender}")
 
 
 def find_data(post_row):
